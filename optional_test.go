@@ -1,4 +1,4 @@
-package wrapper
+package optional
 
 import (
 	"testing"
@@ -6,14 +6,14 @@ import (
 
 func TestWrapper_Nil(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
-		opt := New[any](nil)
+		opt := NewOptional[any](nil)
 		if opt.Nil() != true {
 			t.Error("expected Nil() == true")
 		}
 	})
 	t.Run("notNil", func(t *testing.T) {
 		expected := "Hello, World"
-		opt := New(&expected)
+		opt := NewOptional(&expected)
 		if opt.Nil() {
 			t.Error("expected Nil() == false")
 		}
@@ -22,14 +22,14 @@ func TestWrapper_Nil(t *testing.T) {
 
 func TestWrapper_Unwrap(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
-		opt := New[any](nil)
+		opt := NewOptional[any](nil)
 		opt.Unwrap(func(a *any) {
 			t.Error("should not unwrap")
 		})
 	})
 	t.Run("notNil", func(t *testing.T) {
 		expected := "Hello, World"
-		opt := New(&expected)
+		opt := NewOptional(&expected)
 		didUnwrap := false
 		opt.Unwrap(func(unwrapped *string) {
 			if *unwrapped != "Hello, World" {
@@ -51,7 +51,7 @@ func TestWrapper_Or(t *testing.T) {
 		0.0, 0.1,
 	}
 	t.Run("nil", func(t *testing.T) {
-		opt := New[any](nil)
+		opt := NewOptional[any](nil)
 		for _, v := range testVals {
 			result := opt.Or(v)
 			if *result != v {
@@ -61,7 +61,7 @@ func TestWrapper_Or(t *testing.T) {
 	})
 	t.Run("notNil", func(t *testing.T) {
 		for _, v := range testVals {
-			opt := New(&v)
+			opt := NewOptional(&v)
 			result := opt.Or("wrong")
 			if *result != v {
 				t.Error("expected equality")
@@ -78,7 +78,7 @@ func TestWrapper_Equal(t *testing.T) {
 		0.0, 0.1,
 	}
 	t.Run("nil", func(t *testing.T) {
-		opt := New[any](nil)
+		opt := NewOptional[any](nil)
 		if !opt.Equal(nil) {
 			t.Error("expected nil equality")
 		}
@@ -90,10 +90,28 @@ func TestWrapper_Equal(t *testing.T) {
 	})
 	t.Run("notNil", func(t *testing.T) {
 		for _, v := range testVals {
-			opt := New(&v)
+			opt := NewOptional(&v)
 			if !opt.Equal(v) {
 				t.Error("expected equality")
 			}
+		}
+	})
+}
+
+func TestOptional_SetValue(t *testing.T) {
+	t.Run("fromNil", func(t *testing.T) {
+		var opt Optional[int]
+		opt.SetValue(7)
+		if *opt.Or(0) != 7 {
+			t.Error("expected 7")
+		}
+	})
+	t.Run("fromNotNil", func(t *testing.T) {
+		original := 5
+		opt := NewOptional(&original)
+		opt.SetValue(7)
+		if *opt.Or(0) != 7 {
+			t.Error("expected 7")
 		}
 	})
 }
