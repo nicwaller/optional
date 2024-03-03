@@ -1,6 +1,7 @@
 package optional
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -61,4 +62,17 @@ func (o *Optional[T]) Set(ptr *T) {
 // because Go doesn't allow taking address of a literal scalar type
 func (o *Optional[T]) SetValue(ptr T) {
 	o.rawPointer = &ptr
+}
+
+//goland:noinspection GoMixedReceiverTypes
+func (o Optional[T]) String() string {
+	return fmt.Sprintf("<Optional:%v>", o.GoString())
+}
+
+//goland:noinspection GoMixedReceiverTypes
+func (o Optional[T]) GoString() string {
+	if o.rawPointer == nil {
+		return "nil"
+	}
+	return fmt.Sprintf("%v", *o.rawPointer)
 }
