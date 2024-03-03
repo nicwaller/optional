@@ -17,6 +17,10 @@ func NewOptional[T any](ptr *T) Optional[T] {
 	}
 }
 
+func NewOptionalVal[T any](val T) Optional[T] {
+	return NewOptional(&val)
+}
+
 func (o *Optional[T]) Nil() bool {
 	return o.rawPointer == nil
 }
