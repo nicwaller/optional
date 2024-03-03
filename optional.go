@@ -26,7 +26,7 @@ func (o *Optional[T]) Nil() bool {
 }
 
 // Unwrap safely calls the provided function with a not-nil pointer
-func (o *Optional[T]) Unwrap(f func(safePtr *T)) {
+func (o Optional[T]) Unwrap(f func(safePtr *T)) {
 	if ptr := o.rawPointer; ptr != nil {
 		f(ptr)
 	}
