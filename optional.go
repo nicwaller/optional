@@ -64,6 +64,10 @@ func (o *Optional[T]) SetValue(ptr T) {
 	o.rawPointer = &ptr
 }
 
+// let the compiler verify interface compatibility
+var _ fmt.Stringer = Optional[any]{}
+var _ fmt.GoStringer = Optional[any]{}
+
 //goland:noinspection GoMixedReceiverTypes
 func (o Optional[T]) String() string {
 	return fmt.Sprintf("<Optional:%v>", o.GoString())
