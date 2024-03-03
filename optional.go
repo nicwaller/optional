@@ -5,6 +5,8 @@ import (
 )
 
 //goland:noinspection GoUnusedExportedFunction
-func Optional[T any](ptr *T) wrapper.Wrapper[T] {
+func NewOptional[T any](ptr *T) wrapper.Wrapper[T] {
 	return wrapper.New[T](ptr)
 }
+
+type Optional[T any] wrapper.Wrapper[T]
