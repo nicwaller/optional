@@ -43,6 +43,39 @@ func TestWrapper_Unwrap(t *testing.T) {
 	})
 }
 
+func TestWrapper_IfElse(t *testing.T) {
+	t.Run("nilFunc", func(t *testing.T) {
+		opt := OptionalPointer[any](nil)
+		opt.IfElse(nil, nil)
+		// if we didn't panic, all good.
+	})
+	t.Run("nil", func(t *testing.T) {
+		opt := OptionalPointer[any](nil)
+		var elseCalled bool
+		opt.IfElse(func(a *any) {
+			t.Error("should not unwrap")
+		}, func() {
+			elseCalled = true
+		})
+		if !elseCalled {
+			t.Errorf("else func should have been called")
+		}
+	})
+	t.Run("notNil", func(t *testing.T) {
+		expected := "Hello, World"
+		opt := OptionalValue(expected)
+		var actual string
+		opt.IfElse(func(safePtr *string) {
+			actual = *safePtr
+		}, func() {
+			t.Error("else should not be called: it had a real value")
+		})
+		if actual != expected {
+			t.Errorf("expected %q but got %q", expected, actual)
+		}
+	})
+}
+
 func TestWrapper_Or(t *testing.T) {
 	testVals := []any{
 		false, true,

@@ -47,6 +47,18 @@ func (o Optional[T]) Unwrap(f func(safePtr *T)) {
 	}
 }
 
+func (o Optional[T]) IfElse(iff func(safePtr *T), elsef func()) {
+	if ptr := o.rawPointer; ptr != nil {
+		if iff != nil {
+			iff(ptr)
+		}
+	} else {
+		if elsef != nil {
+			elsef()
+		}
+	}
+}
+
 // Or returns the unwrapped pointer, but only if it's not nil
 // Otherwise, it returns a pointer to a valid default
 func (o *Optional[T]) Or(alternative T) *T {
