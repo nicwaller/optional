@@ -85,6 +85,75 @@ func (o *Optional[T]) Equal(cmp T) bool {
 	return false
 }
 
+func Delve[T any](maybeSlice any, indices ...int) Optional[T] {
+	if maybeSlice == nil || indices == nil {
+		return OptionalPointer[T](nil)
+	}
+	if len(indices) == 0 {
+		return OptionalPointer[T](nil)
+	}
+	index := indices[0]
+	if index < 0 {
+		return OptionalPointer[T](nil)
+	}
+	rSliceValue := reflect.ValueOf(maybeSlice)
+	//if rSliceValue.Kind() != reflect.Slice {
+	//	return OptionalPointer[T](nil)
+	//}
+	if 0 == rSliceValue.Len() || index >= rSliceValue.Len() {
+		return OptionalPointer[T](nil)
+	}
+
+	innerValue := rSliceValue.Index(index)
+	if len(indices) == 1 {
+		if finalValue, ok := innerValue.Interface().(T); ok {
+			return OptionalValue(finalValue)
+		} else {
+			return OptionalPointer[T](nil)
+		}
+	} else {
+		subIndices := indices[1:]
+		if subSlice, ok := innerValue.Interface().([]T); ok {
+			return Delve[T](subSlice, subIndices...)
+		} else if subSlice, ok := innerValue.Interface().([][]T); ok {
+			return Delve[T](subSlice, subIndices...)
+		} else if subSlice, ok := innerValue.Interface().([][][]T); ok {
+			return Delve[T](subSlice, subIndices...)
+		} else if subSlice, ok := innerValue.Interface().([][][][]T); ok {
+			return Delve[T](subSlice, subIndices...)
+		} else if subSlice, ok := innerValue.Interface().([][][][][]T); ok {
+			return Delve[T](subSlice, subIndices...)
+		} else {
+			return OptionalPointer[T](nil)
+		}
+	}
+}
+
+//// if the optional is a collection, index into a slice or map collection
+//func (o *Optional[T]) Get(index any) Optional[T] {
+//	if o.rawPointer == nil {
+//		return OptionalPointer[T](nil)
+//	}
+//
+//	iVal := reflect.ValueOf(index)
+//	rVal := reflect.ValueOf(*o.rawPointer)
+//	indexKind := iVal.Kind()
+//	switch rVal.Kind() {
+//	case reflect.Slice:
+//		if indexKind != reflect.Int {
+//			return OptionalPointer[T](nil)
+//		}
+//		var indexIntVal int = iVal.Interface().(int)
+//		var innerVal T = rVal.Index(indexIntVal).Interface().(T)
+//		return OptionalValue[T](innerVal)
+//	case reflect.Map:
+//		innerVal := rVal.MapIndex(reflect.ValueOf(index)).Interface().(T)
+//		return OptionalValue[T](innerVal)
+//	default:
+//		return OptionalPointer[T](nil)
+//	}
+//}
+
 func (o *Optional[T]) SetPointer(ptr *T) {
 	o.rawPointer = ptr
 }

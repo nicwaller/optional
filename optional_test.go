@@ -251,3 +251,82 @@ func TestInMap(t *testing.T) {
 		})
 	}
 }
+
+func TestDelve(t *testing.T) {
+	type Scenario struct {
+		collection any
+		indices    []int
+		value      int
+		nil        bool
+	}
+
+	mtx1D := []int{0, 1}
+
+	mtx2D := [][]int{
+		{0, 1},
+		{2, 3},
+	}
+
+	mtx3D := [][][]int{
+		{
+			{0, 1},
+			{2, 3},
+		},
+		{
+			{4, 5},
+			{6, 7},
+		},
+	}
+
+	scenarios := []Scenario{
+		{collection: nil, indices: nil, value: 0, nil: true},
+		{collection: nil, indices: []int{}, value: 0, nil: true},
+		{collection: nil, indices: []int{0}, value: 0, nil: true},
+		{collection: nil, indices: []int{0, 0}, value: 0, nil: true},
+
+		{collection: mtx1D, indices: nil, value: 0, nil: true},
+		{collection: mtx1D, indices: []int{}, value: 0, nil: true},
+		{collection: mtx1D, indices: []int{-1}, value: 0, nil: true},
+		{collection: mtx1D, indices: []int{0}, value: 0, nil: false},
+		{collection: mtx1D, indices: []int{1}, value: 1, nil: false},
+		{collection: mtx1D, indices: []int{2}, value: 0, nil: true},
+
+		{collection: mtx2D, indices: nil, value: 0, nil: true},
+		{collection: mtx2D, indices: []int{}, value: 0, nil: true},
+		{collection: mtx2D, indices: []int{0}, value: 0, nil: true},
+		{collection: mtx2D, indices: []int{0, 0}, value: 0, nil: false},
+		{collection: mtx2D, indices: []int{0, 1}, value: 1, nil: false},
+		{collection: mtx2D, indices: []int{1, 0}, value: 2, nil: false},
+		{collection: mtx2D, indices: []int{1, 1}, value: 3, nil: false},
+
+		{collection: mtx3D, indices: []int{0, 0, 0}, value: 0, nil: false},
+		{collection: mtx3D, indices: []int{0, 0, 1}, value: 1, nil: false},
+		{collection: mtx3D, indices: []int{0, 1, 0}, value: 2, nil: false},
+		{collection: mtx3D, indices: []int{0, 1, 1}, value: 3, nil: false},
+		{collection: mtx3D, indices: []int{1, 0, 0}, value: 4, nil: false},
+		{collection: mtx3D, indices: []int{1, 0, 1}, value: 5, nil: false},
+		{collection: mtx3D, indices: []int{1, 1, 0}, value: 6, nil: false},
+		{collection: mtx3D, indices: []int{1, 1, 1}, value: 7, nil: false},
+		{collection: mtx3D, indices: nil, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{}, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{0}, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{0, 0}, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{0, 0, 0, 0}, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{-1, -1, -1}, value: 0, nil: true},
+		{collection: mtx3D, indices: []int{5, 5, 5}, value: 0, nil: true},
+	}
+	for _, scenario := range scenarios {
+		actual := Delve[int](scenario.collection, scenario.indices...)
+		if actual.Nil() != scenario.nil {
+			t.Log(scenario)
+			t.Errorf("failed nil test")
+		}
+		if actual.Nil() {
+			continue
+		}
+		if !actual.Equal(scenario.value) {
+			t.Log(scenario)
+			t.Errorf("expected %d but got %v", scenario.value, actual)
+		}
+	}
+}
