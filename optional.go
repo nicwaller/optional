@@ -73,12 +73,10 @@ func (o *Optional[T]) Equal(cmp T) bool {
 	return false
 }
 
-func (o *Optional[T]) Set(ptr *T) {
+func (o *Optional[T]) SetPointer(ptr *T) {
 	o.rawPointer = ptr
 }
 
-// SetValue is a convenience function
-// because Go doesn't allow taking address of a literal scalar type
 func (o *Optional[T]) SetValue(ptr T) {
 	o.rawPointer = &ptr
 }
