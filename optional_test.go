@@ -252,6 +252,57 @@ func TestInMap(t *testing.T) {
 	}
 }
 
+func TestDelveMap(t *testing.T) {
+	type Scenario struct {
+		collection any
+		keys       []string
+		value      string
+		nil        bool
+	}
+
+	shallowMap := map[string]string{
+		"foo": "bar",
+	}
+	deepMap := map[string]map[string]string{
+		"one": {
+			"two": "three",
+		},
+	}
+
+	scenarios := []Scenario{
+		{collection: nil, keys: nil, value: "", nil: true},
+
+		{collection: shallowMap, keys: nil, value: "", nil: true},
+		{collection: shallowMap, keys: []string{}, value: "", nil: true},
+		{collection: shallowMap, keys: []string{"foo"}, value: "bar", nil: false},
+		{collection: shallowMap, keys: []string{"foo", "foo"}, value: "", nil: true},
+
+		{collection: deepMap, keys: nil, value: "", nil: true},
+		{collection: deepMap, keys: []string{}, value: "", nil: true},
+		{collection: deepMap, keys: []string{"one"}, value: "", nil: true},
+		{collection: deepMap, keys: []string{"one", "two"}, value: "three", nil: false},
+		{collection: deepMap, keys: []string{"one", "two", "three"}, value: "", nil: true},
+	}
+
+	for _, scenario := range scenarios {
+		actual := DelveMap[string, string](scenario.collection, scenario.keys...)
+		if actual.Nil() != scenario.nil {
+			t.Log(scenario)
+			t.Errorf("failed nil test")
+		}
+		if actual.Nil() {
+			continue
+		}
+		if !actual.Equal(scenario.value) {
+			t.Log(scenario)
+			t.Errorf("expected %s but got %v", scenario.value, actual)
+		}
+		actual.Unwrap(func(safePtr *string) {
+			t.Log(*safePtr)
+		})
+	}
+}
+
 func TestDelve(t *testing.T) {
 	type Scenario struct {
 		collection any

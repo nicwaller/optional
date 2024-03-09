@@ -129,30 +129,39 @@ func Delve[T any](maybeSlice any, indices ...int) Optional[T] {
 	}
 }
 
-//// if the optional is a collection, index into a slice or map collection
-//func (o *Optional[T]) Get(index any) Optional[T] {
-//	if o.rawPointer == nil {
-//		return OptionalPointer[T](nil)
-//	}
-//
-//	iVal := reflect.ValueOf(index)
-//	rVal := reflect.ValueOf(*o.rawPointer)
-//	indexKind := iVal.Kind()
-//	switch rVal.Kind() {
-//	case reflect.Slice:
-//		if indexKind != reflect.Int {
-//			return OptionalPointer[T](nil)
-//		}
-//		var indexIntVal int = iVal.Interface().(int)
-//		var innerVal T = rVal.Index(indexIntVal).Interface().(T)
-//		return OptionalValue[T](innerVal)
-//	case reflect.Map:
-//		innerVal := rVal.MapIndex(reflect.ValueOf(index)).Interface().(T)
-//		return OptionalValue[T](innerVal)
-//	default:
-//		return OptionalPointer[T](nil)
-//	}
-//}
+func DelveMap[K comparable, T any](maybeMap any, keys ...K) Optional[T] {
+	if maybeMap == nil || keys == nil {
+		return OptionalPointer[T](nil)
+	}
+	if len(keys) == 0 {
+		return OptionalPointer[T](nil)
+	}
+	key := keys[0]
+	rMapValue := reflect.ValueOf(maybeMap)
+	innerValue := rMapValue.MapIndex(reflect.ValueOf(key))
+	if len(keys) == 1 {
+		if finalValue, ok := innerValue.Interface().(T); ok {
+			return OptionalValue(finalValue)
+		} else {
+			return OptionalPointer[T](nil)
+		}
+	} else {
+		subKeys := keys[1:]
+		if subSlice, ok := innerValue.Interface().(map[K]T); ok {
+			return DelveMap[K, T](subSlice, subKeys...)
+		} else if subSlice, ok := innerValue.Interface().([][]T); ok {
+			return DelveMap[K, T](subSlice, subKeys...)
+		} else if subSlice, ok := innerValue.Interface().([][][]T); ok {
+			return DelveMap[K, T](subSlice, subKeys...)
+		} else if subSlice, ok := innerValue.Interface().([][][][]T); ok {
+			return DelveMap[K, T](subSlice, subKeys...)
+		} else if subSlice, ok := innerValue.Interface().([][][][][]T); ok {
+			return DelveMap[K, T](subSlice, subKeys...)
+		} else {
+			return OptionalPointer[T](nil)
+		}
+	}
+}
 
 func (o *Optional[T]) SetPointer(ptr *T) {
 	o.rawPointer = ptr
