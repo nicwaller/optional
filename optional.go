@@ -21,6 +21,14 @@ func OptionalValue[T any](val T) Optional[T] {
 	return OptionalPointer(&val)
 }
 
+func Some[T any](val *T) Optional[T] {
+	return OptionalPointer[T](val)
+}
+
+func None[T any]() Optional[T] {
+	return OptionalPointer[T](nil)
+}
+
 func OptionalFromSlice[T any](s []T, index int) Optional[T] {
 	if index < 0 || index >= len(s) {
 		return OptionalPointer[T](nil)
