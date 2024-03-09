@@ -11,14 +11,29 @@ type Optional[T any] struct {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func NewOptional[T any](ptr *T) Optional[T] {
+func FromPointer[T any](ptr *T) Optional[T] {
 	return Optional[T]{
 		rawPointer: ptr,
 	}
 }
 
-func NewOptionalVal[T any](val T) Optional[T] {
-	return NewOptional(&val)
+func FromValue[T any](val T) Optional[T] {
+	return FromPointer(&val)
+}
+
+func InSlice[T any](s []T, index int) Optional[T] {
+	if index < 0 || index >= len(s) {
+		return FromPointer[T](nil)
+	}
+	return FromValue(s[index])
+}
+
+func InMap[K comparable, V any](m map[K]V, k K) Optional[V] {
+	if v, found := m[k]; found {
+		return FromValue(v)
+	} else {
+		return FromPointer[V](nil)
+	}
 }
 
 func (o *Optional[T]) Nil() bool {
